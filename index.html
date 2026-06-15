@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#D4A017"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="ImmoToken"/>
+  <meta name="description" content="Tokenisation immobilière Burkina Faso"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <title>ImmoToken</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    :root{
+      --gold:#D4A017;--gold2:#F5C842;--gold3:#8B6508;
+      --bg:#0A0E1A;--bg2:#111827;--bg3:#1F2937;
+      --surface:#1A2035;--surface2:#243050;
+      --text:#F0F2F8;--muted:#8B95B0;
+      --green:#1D9E75;--green2:#9FE1CB;
+      --red:#D85A30;--blue:#378ADD;
+      --border:rgba(212,160,23,0.2);
+    }
+    html,body{height:100%;background:var(--bg2);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
+    #app{height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative;background:var(--bg2)}
+
+    /* Splash */
+    #splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .5s}
+    .splash-icon{width:80px;height:80px;background:var(--gold);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:16px;animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    .splash-title{font-size:28px;font-weight:700;color:var(--text)}
+    .splash-sub{font-size:13px;color:var(--gold);letter-spacing:3px;margin-top:4px}
+
+    /* Header */
+    .header{background:var(--bg);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+    .logo-row{display:flex;align-items:center;gap:8px}
+    .logo-box{width:32px;height:32px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+    .logo-name{font-size:17px;font-weight:600}
+    .logo-tagline{font-size:10px;color:var(--gold);letter-spacing:2px}
+    .header-right{display:flex;align-items:center;gap:8px}
+    .notif-btn{width:36px;height:36px;background:var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+    .wallet-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--gold2)}
+
+    /* Main scroll area */
+    .main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px}
+
+    /* Bottom Nav */
+    .bottom-nav{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));flex-shrink:0}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;color:var(--muted);font-size:10px;transition:color .2s}
+    .nav-item.active{color:var(--gold)}
+    .nav-item .icon{font-size:20px}
+
+    /* Pages */
+    .page{display:none;padding:16px}
+    .page.active{display:block}
+
+    /* Cards */
+    .card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+    .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+
+    /* Stats */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+    .stat{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:12px}
+    .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .stat-val{font-size:20px;font-weight:700;color:var(--text)}
+    .stat-hint{font-size:10px;color:var(--green);margin-top:2px}
+
+    /* Project card */
+    .proj-badge{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600}
+    .badge-immo{background:rgba(55,138,221,.2);color:#85B7EB}
+    .badge-agri{background:rgba(29,158,117,.2);color:#5DCAA5}
+    .badge-energie{background:rgba(212,160,23,.2);color:var(--gold2)}
+    .badge-elevage{background:rgba(216,90,48,.2);color:#F09570}
+    .proj-name{font-size:14px;font-weight:600;margin-bottom:2px}
+    .proj-loc{font-size:11px;color:var(--muted)}
+    .prog-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin:10px 0 5px}
+    .prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold3),var(--gold2))}
+    .prog-row{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+    .proj-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:.5px solid var(--border)}
+    .token-price{font-size:12px;color:var(--gold);font-weight:500}
+    .rend{font-size:11px;color:var(--green)}
+
+    /* Buy form */
+    .section-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;margin-top:4px}
+    .input-group{margin-bottom:14px}
+    .input-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;letter-spacing:.5px}
+    .inp{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 14px;font-size:14px;outline:none}
+    .inp:focus{border-color:var(--gold)}
+    select.inp option{background:var(--bg3);color:var(--text)}
+    .calc-box{background:var(--bg3);border:.5px solid var(--border);border-radius:10px;padding:12px;margin:12px 0}
+    .calc-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+    .calc-row span:first-child{color:var(--muted)}
+    .calc-row.total{border-top:.5px solid var(--border);margin-top:6px;padding-top:6px}
+    .calc-row.total span:last-child{color:var(--gold);font-weight:600}
+    .btn-main{width:100%;padding:14px;background:var(--gold);color:#0A0E1A;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;letter-spacing:.5px}
+    .btn-main:disabled{opacity:.4}
+    .btn-main:active{transform:scale(.98)}
+
+    /* Mode buttons */
+    .mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+    .mode-btn{padding:10px 4px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:11px;text-align:center;cursor:pointer;transition:all .2s}
+    .mode-btn.selected{border-color:var(--gold);color:var(--gold);background:rgba(212,160,23,.08)}
+    .mode-icon{font-size:18px;margin-bottom:3px}
+
+    /* Wallet */
+    .wallet-header{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
+    .wallet-total{font-size:34px;font-weight:700;color:var(--gold)}
+    .wallet-fcfa{font-size:12px;color:var(--muted);margin-top:4px}
+
+    /* Holdings */
+    .holding{display:flex;align-items:center;gap:12px}
+    .h-icon{width:38px;height:38px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .h-name{font-size:13px;font-weight:500}
+    .h-tokens{font-size:11px;color:var(--muted)}
+    .h-val{margin-left:auto;text-align:right}
+    .h-fcfa{font-size:13px;font-weight:500}
+    .h-gain{font-size:10px;color:var(--green)}
+
+    /* Transactions */
+    .tx{display:flex;align-items:center;gap:12px}
+    .tx-icon{width:34px;height:34px;background:rgba(29,158,117,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .tx-name{font-size:12px;font-weight:500}
+    .tx-date{font-size:10px;color:var(--muted)}
+    .tx-amt{margin-left:auto;text-align:right}
+    .tx-tkn{font-size:12px;font-weight:500;color:var(--green)}
+    .tx-fcfa{font-size:10px;color:var(--muted)}
+
+    /* Toast */
+    .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:100;opacity:0;transition:opacity .3s;white-space:nowrap}
+    .toast.show{opacity:1}
+
+    /* Install banner */
+    .install-banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+    .install-icon{font-size:24px}
+    .install-text{flex:1;font-size:12px;color:var(--muted)}
+    .install-btn{background:var(--gold);color:#0A0E1A;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+<div id="splash">
+  <div class="splash-icon">⬡</div>
+  <div class="splash-title">ImmoToken</div>
+  <div class="splash-sub">BURKINA · AFRIQUE</div>
+</div>
+
+<div id="app">
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-box">⬡</div>
+      <div>
+        <div class="logo-name">ImmoToken</div>
+        <div class="logo-tagline">INVESTIS · TOKENIS</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="notif-btn">🔔</div>
+      <div class="wallet-chip">💰 <span id="hdr-bal">0</span></div>
+    </div>
+  </div>
+
+  <div class="main" id="main">
+
+    <!-- PAGE: ACCUEIL -->
+    <div class="page active" id="pg-home">
+      <div id="install-banner" class="install-banner" style="display:none">
+        <div class="install-icon">📲</div>
+        <div class="install-text">Installer l'app sur votre téléphone pour un accès rapide</div>
+        <button class="install-btn" id="install-btn">Installer</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-label">Mes tokens</div>
+          <div class="stat-val" id="st-tokens">0</div>
+          <div class="stat-hint">Total détenu</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Valeur FCFA</div>
+          <div class="stat-val" id="st-valeur">0</div>
+          <div class="stat-hint">+8.3% ce mois</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Projets</div>
+          <div class="stat-val" id="st-projets">0</div>
+          <div class="stat-hint">Investissements</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Rendement</div>
+          <div class="stat-val">12%</div>
+          <div class="stat-hint">Annuel moyen</div>
+        </div>
+      </div>
+
+      <div class="section-title">Projets disponibles</div>
+      <div id="proj-list"></div>
+    </div>
+
+    <!-- PAGE: INVESTIR -->
+    <div class="page" id="pg-buy">
+      <div class="section-title">Sélectionner un projet</div>
+      <div class="input-group">
+        <select class="inp" id="buy-proj" onchange="calcBuy()">
+          <option value="">-- Choisir un projet --</option>
+        </select>
+      </div>
+
+      <div class="section-title">Montant (FCFA)</div>
+      <div class="input-group">
+        <input class="inp" type="number" id="buy-amt" placeholder="Minimum 1 000 FCFA" oninput="calcBuy()"/>
+      </div>
+
+      <div class="section-title">Mode de paiement</div>
+      <div class="mode-grid">
+        <div class="mode-btn selected" id="mode-mtn" onclick="selMode('mtn')">
+          <div class="mode-icon">📱</div>MTN MoMo
+        </div>
+        <div class="mode-btn" id="mode-orange" onclick="selMode('orange')">
+          <div class="mode-icon">🟠</div>Orange Money
+        </div>
+        <div class="mode-btn" id="mode-vir" onclick="selMode('virement')">
+          <div class="mode-icon">🏦</div>Virement
+        </div>
+      </div>
+
+      <div class="input-group" id="mobile-row">
+        <label class="input-label">Numéro Mobile Money</label>
+        <input class="inp" type="tel" id="buy-num" placeholder="Ex: 70123456"/>
+      </div>
+
+      <div class="calc-box" id="calc-box" style="display:none">
+        <div class="calc-row"><span>Montant investi</span><span id="c-amt">0 FCFA</span></div>
+        <div class="calc-row"><span>Prix / token</span><span id="c-prix">0 FCFA</span></div>
+        <div class="calc-row"><span>Frais (1%)</span><span id="c-frais">0 FCFA</span></div>
+        <div class="calc-row total"><span>Tokens reçus</span><span id="c-tokens">0</span></div>
+      </div>
+
+      <button class="btn-main" id="btn-buy" onclick="doBuy()" disabled>Confirmer l'achat</button>
+    </div>
+
+    <!-- PAGE: WALLET -->
+    <div class="page" id="pg-wallet">
+      <div class="wallet-header">
+        <div class="wallet-total" id="wlt-total">0</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">tokens détenus</div>
+        <div class="wallet-fcfa">Valeur : <span id="wlt-fcfa" style="color:var(--gold)">0 FCFA</span></div>
+      </div>
+      <div class="section-title">Mes participations</div>
+      <div id="holdings"></div>
+    </div>
+
+    <!-- PAGE: HISTORIQUE -->
+    <div class="page" id="pg-hist">
+      <div class="section-title">Historique transactions</div>
+      <div id="tx-list"></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="goPage('home')">
+      <div class="icon">🏠</div>Accueil
+    </div>
+    <div class="nav-item" id="nav-buy" onclick="goPage('buy')">
+      <div class="icon">💎</div>Investir
+    </div>
+    <div class="nav-item" id="nav-wallet" onclick="goPage('wallet')">
+      <div class="icon">👛</div>Wallet
+    </div>
+    <div class="nav-item" id="nav-hist" onclick="goPage('hist')">
+      <div class="icon">📋</div>Historique
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PROJETS = [
+  {id:1,nom:"Villa Ouaga 2000",loc:"Ouagadougou",type:"immo",icon:"🏢",valeur:50000000,tokens:50000,prix:1000,av:68,rend:"11%/an"},
+  {id:2,nom:"Ferme Maraîchère Kaya",loc:"Kaya, Centre-Nord",type:"agri",icon:"🌾",valeur:12000000,tokens:24000,prix:500,av:42,rend:"14%/an"},
+  {id:3,nom:"Solaire Bobo 50kW",loc:"Bobo-Dioulasso",type:"energie",icon:"☀",valeur:30000000,tokens:30000,prix:1000,av:85,rend:"13%/an"},
+  {id:4,nom:"Résidence Tampouy",loc:"Ouagadougou Nord",type:"immo",icon:"🏘",valeur:80000000,tokens:80000,prix:1000,av:25,rend:"10%/an"},
+  {id:5,nom:"Élevage Dori Pro",loc:"Dori, Sahel",type:"elevage",icon:"🐄",valeur:8000000,tokens:16000,prix:500,av:55,rend:"16%/an"},
+];
+const BADGE = {immo:"badge-immo immobilier",agri:"badge-agri agriculture",energie:"badge-energie énergie",elevage:"badge-elevage élevage"};
+let wallet={}, txs=[], mode="mtn", deferredPrompt=null;
+
+const fmt = n => Math.round(n).toLocaleString('fr-FR');
+
+// Splash
+setTimeout(()=>{
+  document.getElementById('splash').style.opacity='0';
+  setTimeout(()=>document.getElementById('splash').style.display='none',500);
+},1600);
+
+// PWA Install
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('install-banner').style.display='flex';
+});
+document.getElementById('install-btn').onclick=()=>{
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}
+  document.getElementById('install-banner').style.display='none';
+};
+
+function renderProjets(){
+  document.getElementById('proj-list').innerHTML=PROJETS.map(p=>{
+    const [bc,bl]=BADGE[p.type].split(' ');
+    return `<div class="card" onclick="buyProj(${p.id})">
+      <div class="card-header">
+        <div><div class="proj-name">${p.nom}</div><div class="proj-loc">📍 ${p.loc}</div></div>
+        <span class="proj-badge ${bc}">${bl}</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${p.av}%"></div></div>
+      <div class="prog-row"><span>${p.av}% financé</span><span>${fmt(p.valeur)} FCFA</span></div>
+      <div class="proj-footer">
+        <span class="token-price">1 token = ${fmt(p.prix)} FCFA</span>
+        <span class="rend">▲ ${p.rend}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function populateSelect(){
+  const s=document.getElementById('buy-proj');
+  PROJETS.forEach(p=>{const o=new Option(`${p.nom} — ${fmt(p.prix)} FCFA/token`,p.id);s.add(o);});
+}
+
+function buyProj(id){
+  document.getElementById('buy-proj').value=id;
+  goPage('buy'); calcBuy();
+}
+
+function selMode(m){
+  mode=m;
+  ['mtn','orange','vir'].forEach(x=>document.getElementById('mode-'+x).classList.remove('selected'));
+  document.getElementById('mode-'+m).classList.add('selected');
+  document.getElementById('mobile-row').style.display=(m==='virement')?'none':'block';
+}
+
+function calcBuy(){
+  const pid=parseInt(document.getElementById('buy-proj').value);
+  const amt=parseFloat(document.getElementById('buy-amt').value)||0;
+  const btn=document.getElementById('btn-buy');
+  const box=document.getElementById('calc-box');
+  if(!pid||amt<1000){box.style.display='none';btn.disabled=true;return;}
+  const p=PROJETS.find(x=>x.id===pid);
+  const frais=amt*.01, net=amt-frais, toks=net/p.prix;
+  document.getElementById('c-amt').textContent=fmt(amt)+' FCFA';
+  document.getElementById('c-prix').textContent=fmt(p.prix)+' FCFA';
+  document.getElementById('c-frais').textContent=fmt(frais)+' FCFA';
+  document.getElementById('c-tokens').textContent=toks.toFixed(2)+' tokens';
+  box.style.display='block'; btn.disabled=false;
+}
+
+function doBuy(){
+  const pid=parseInt(document.getElementById('buy-proj').value);
+  const amt=parseFloat(document.getElementById('buy-amt').value);
+  const p=PROJETS.find(x=>x.id===pid);
+  const frais=amt*.01, toks=(amt-frais)/p.prix;
+  wallet[pid]=(wallet[pid]||0)+toks;
+  txs.unshift({pid,nom:p.nom,toks,amt,date:new Date(),mode});
+  document.getElementById('buy-amt').value='';
+  document.getElementById('buy-proj').value='';
+  document.getElementById('calc-box').style.display='none';
+  document.getElementById('btn-buy').disabled=true;
+  showToast('Achat réussi ! +'+toks.toFixed(2)+' tokens');
+  updateAll();
+}
+
+function updateAll(){
+  let tot=0,fcfa=0,nb=0;
+  for(let pid in wallet){const p=PROJETS.find(x=>x.id==pid);tot+=wallet[pid];fcfa+=wallet[pid]*p.prix;nb++;}
+  document.getElementById('hdr-bal').textContent=fmt(tot);
+  document.getElementById('st-tokens').textContent=fmt(tot);
+  document.getElementById('st-valeur').textContent=fmt(fcfa);
+  document.getElementById('st-projets').textContent=nb;
+  document.getElementById('wlt-total').textContent=fmt(tot);
+  document.getElementById('wlt-fcfa').textContent=fmt(fcfa)+' FCFA';
+  renderHoldings(); renderTx();
+}
+
+function renderHoldings(){
+  const el=document.getElementById('holdings');
+  if(!Object.keys(wallet).length){el.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Aucune participation</p>';return;}
+  el.innerHTML=Object.keys(wallet).map(pid=>{
+    const p=PROJETS.find(x=>x.id==pid), t=wallet[pid];
+    return `<div class="card"><div class="holding">
+      <div class="h-icon">${p.icon}</div>
+      <div><div class="h-name">${p.nom}</div><div class="h-tokens">${t.toFixed(2)} tokens</div></div>
+      <div class="h-val"><div class="h-fcfa">${fmt(t*p.prix)} FCFA</div><div class="h-gain">${p.rend}</div></div>
+    </div></div>`;
+  }).join('');
+}
+
+function renderTx(){
+  const el=document.getElementById('tx-list');
+  if(!txs.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Aucune transaction</p>';return;}
+  el.innerHTML=txs.map(tx=>{
+    const d=tx.date.toLocaleDateString('fr-FR');
+    return `<div class="card"><div class="tx">
+      <div class="tx-icon">⬆</div>
+      <div><div class="tx-name">${tx.nom}</div><div class="tx-date">${d} · ${tx.mode}</div></div>
+      <div class="tx-amt"><div class="tx-tkn">+${tx.toks.toFixed(2)} tkns</div><div class="tx-fcfa">${fmt(tx.amt)} FCFA</div></div>
+    </div></div>`;
+  }).join('');
+}
+
+function goPage(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+pg).classList.add('active');
+  document.getElementById('nav-'+pg).classList.add('active');
+  document.getElementById('main').scrollTop=0;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+renderProjets();
+populateSelect();
+
+// Register Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(()=>console.log('SW enregistré'));
+}
+</script>
+</body>
+</html>
